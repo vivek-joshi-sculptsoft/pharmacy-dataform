@@ -1,0 +1,5 @@
+config { type: "view", schema: "pharmacy_curated", name: "rx_summary" }
+
+SELECT rx_number, fill_date, SUM(paid_amount) AS paid
+FROM ${ref("rx_curated")}
+GROUP BY 1, 2
