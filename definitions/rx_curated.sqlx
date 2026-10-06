@@ -1,0 +1,33 @@
+config {
+  type: "incremental",
+  name: "rx_curated",
+  uniqueKey: ["rx_number", "fill_date"],
+  protected: true,
+  bigquery: {
+    partitionBy: "fill_date",
+    clusterBy: ["rx_number"]
+  },
+  assertions: {
+    nonNull: ["rx_number", "fill_date"]
+  },
+  description: "Curated prescriptions from the Google Sheet, upserted on every run."
+}
+
+SELECT
+  rx_number, fill_date, ndc, drug_name, quantity, days_supply, payer, paid_amount,
+  CURRENT_TIMESTAMP() AS updated_at
+FROM (
+  SELECT
+    NULLIF(TRIM(rx_number), '')                                    AS rx_number,
+    COALESCE(SAFE.PARSE_DATE('%Y-%m-%d', TRIM(fill_date)),
+             SAFE.PARSE_DATE('%m/%d/%Y', TRIM(fill_date)))         AS fill_date,
+    NULLIF(TRIM(ndc), '')                                          AS ndc,
+    NULLIF(TRIM(drug_name), '')                                    AS drug_name,
+    SAFE_CAST(REPLACE(quantity, ',', '') AS NUMERIC)               AS quantity,
+    SAFE_CAST(days_supply AS INT64)                                AS days_supply,
+    NULLIF(TRIM(payer), '')                                        AS payer,
+    SAFE_CAST(REGEXP_REPLACE(paid_amount, r'[$,]', '') AS NUMERIC) AS paid_amount
+  FROM ${ref("rx_sheet_ext")}
+)
+WHERE rx_number IS NOT NULL AND fill_date IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY rx_number, fill_date) = 1
