@@ -1,0 +1,22 @@
+config {
+  type: "operations",
+  name: "rx_sheet_ext",
+  hasOutput: true,
+  description: "External table over the pharmacy Google Sheet. Stores no data."
+}
+
+CREATE OR REPLACE EXTERNAL TABLE ${self()} (
+  rx_number   STRING,
+  fill_date   STRING,
+  ndc         STRING,
+  drug_name   STRING,
+  quantity    STRING,
+  days_supply STRING,
+  payer       STRING,
+  paid_amount STRING
+)
+OPTIONS (
+  format = 'GOOGLE_SHEETS',
+  uris = ['${dataform.projectConfig.vars.sheet_url}'],
+  skip_leading_rows = 1
+)

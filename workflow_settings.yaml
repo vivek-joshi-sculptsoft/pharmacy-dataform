@@ -1,0 +1,7 @@
+defaultProject: dataforms-demo-project
+defaultLocation: US
+defaultDataset: pharmacy_demo
+defaultAssertionDataset: pharmacy_demo_assertions
+vars:
+  sheet_url: "https://docs.google.com/spreadsheets/d/1iaDYBZGYi-68E9U5KVji9wUiaxUPLSj4xW0Iomljrm0"
+dataformCoreVersion: 3.0.52
